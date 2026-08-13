@@ -1,0 +1,382 @@
+﻿1
+Given the scenario of a School Management System, identify
+relations and write SQL to list all students with their class teacher
+and grade.
+
+
+
+
+
+
+2
+A hospital wants to track patient appointments. Design the relational
+schema and write SQL to find doctors with more than 10
+appointments this month.
+
+
+
+
+
+
+3 In an e-commerce scenario, write SQL queries using sub-queries to
+find products that have never been ordered. BL3 – Apply 5
+4 For a university database, write relational algebra expressions to
+find students enrolled in both &#39;DBMS&#39; and &#39;OS&#39; courses. BL3 – Apply 5
+
+
+5
+Given a payroll scenario, create a view showing employees whose
+salary is below department average and write a query to update
+their salary by 10%.
+
+
+6 In a banking scenario, apply JOIN operations to retrieve customer
+account details, transaction history, and branch information. BL3 – Apply 5
+7 A retail store needs daily sales summary. Write SQL with GROUP
+BY and HAVING to report total sales per category exceeding Rs.
+10,000.
+
+
+
+
+
+
+8 For a library system scenario, construct tuple relational calculus
+expressions to find members who borrowed books from all genres. BL3 – Apply 5
+
+
+9
+Given an inventory management scenario, define CHECK and
+FOREIGN KEY constraints and demonstrate their enforcement
+through SQL.
+
+
+
+
+
+
+
+
+10
+Design a relational schema for an HR system and create
+materialized views for monthly attendance and performance
+summaries.
+
+
+ANSWERS
+
+
+Q1. School Management System — 5 Marks
+Relations
+STUDENT
+STUDENT(StudentID, StudentName, ClassID, Grade)
+CLASS
+CLASS(ClassID, ClassName, TeacherID)
+TEACHER
+TEACHER(TeacherID, TeacherName)
+SQL
+SELECT S.StudentID,
+       S.StudentName,
+       T.TeacherName AS ClassTeacher,
+       S.Grade
+FROM STUDENT S
+JOIN CLASS C
+ON S.ClassID = C.ClassID
+JOIN TEACHER T
+ON C.TeacherID = T.TeacherID;
+Explanation
+The query joins the three relations using their primary/foreign key relationships and displays:
+* Student ID
+* Student Name
+* Class Teacher
+* Grade
+________________
+
+
+Q2. Hospital Appointment System — 5 Marks
+Relational Schema
+PATIENT
+PATIENT(PatientID, PatientName, Age, Gender)
+DOCTOR
+DOCTOR(DoctorID, DoctorName, Specialization)
+APPOINTMENT
+APPOINTMENT(AppointmentID, PatientID, DoctorID, AppointmentDate)
+SQL Schema
+CREATE TABLE PATIENT (
+    PatientID INT PRIMARY KEY,
+    PatientName VARCHAR(50),
+    Age INT,
+    Gender VARCHAR(10)
+);
+
+
+CREATE TABLE DOCTOR (
+    DoctorID INT PRIMARY KEY,
+    DoctorName VARCHAR(50),
+    Specialization VARCHAR(50)
+);
+
+
+CREATE TABLE APPOINTMENT (
+    AppointmentID INT PRIMARY KEY,
+    PatientID INT,
+    DoctorID INT,
+    AppointmentDate DATE,
+    FOREIGN KEY (PatientID) REFERENCES PATIENT(PatientID),
+    FOREIGN KEY (DoctorID) REFERENCES DOCTOR(DoctorID)
+);
+Find doctors with more than 10 appointments this month
+SELECT D.DoctorID,
+       D.DoctorName,
+       COUNT(A.AppointmentID) AS TotalAppointments
+FROM DOCTOR D
+JOIN APPOINTMENT A
+ON D.DoctorID = A.DoctorID
+WHERE MONTH(A.AppointmentDate) = MONTH(CURRENT_DATE)
+  AND YEAR(A.AppointmentDate) = YEAR(CURRENT_DATE)
+GROUP BY D.DoctorID, D.DoctorName
+HAVING COUNT(A.AppointmentID) > 10;
+________________
+
+
+Q3. E-Commerce — Products Never Ordered — 5 Marks
+Assume:
+PRODUCT(ProductID, ProductName, Price)
+ORDER_ITEM(OrderID, ProductID, Quantity)
+Using NOT IN
+SELECT ProductID, ProductName
+FROM PRODUCT
+WHERE ProductID NOT IN
+      (SELECT ProductID
+       FROM ORDER_ITEM);
+Using NOT EXISTS
+A safer alternative is:
+SELECT P.ProductID, P.ProductName
+FROM PRODUCT P
+WHERE NOT EXISTS
+      (SELECT 1
+       FROM ORDER_ITEM O
+       WHERE O.ProductID = P.ProductID);
+Explanation
+The subquery finds products that appear in ORDER_ITEM.
+NOT EXISTS returns products for which no order record exists.
+Therefore, the result contains products that have never been ordered.
+________________
+
+
+Q4. Relational Algebra — Students in Both DBMS and OS — 5 Marks
+Assume:
+STUDENT(SID, StudentName)
+ENROLL(SID, CourseID)
+COURSE(CourseID, CourseName)
+We need students enrolled in both DBMS and OS.
+Step 1: Find DBMS students
+DBMS_Students=πSID​(σCourseName=′DBMS′​(COURSE⋈ENROLL))
+Step 2: Find OS students
+OS_Students=πSID​(σCourseName=′OS′​(COURSE⋈ENROLL))
+Step 3: Find students in both
+Both=DBMS_Students∩OS_Students
+Step 4: Get student names
+πStudentName​(STUDENT⋈(DBMS_Students∩OS_Students))​
+This returns students who are enrolled in both DBMS and OS.
+________________
+
+
+Q5. Payroll — View and Salary Update — 5 Marks
+Assume:
+EMPLOYEE(EmpID, EmpName, DeptID, Salary)
+Create View
+The view should display employees whose salary is below their department's average.
+CREATE VIEW BelowDeptAverage AS
+SELECT E.EmpID,
+       E.EmpName,
+       E.DeptID,
+       E.Salary
+FROM EMPLOYEE E
+WHERE E.Salary <
+      (SELECT AVG(E2.Salary)
+       FROM EMPLOYEE E2
+       WHERE E2.DeptID = E.DeptID);
+Display the View
+SELECT *
+FROM BelowDeptAverage;
+Update Salary by 10%
+UPDATE EMPLOYEE
+SET Salary = Salary * 1.10
+WHERE EmpID IN
+      (SELECT EmpID
+       FROM BelowDeptAverage);
+Explanation
+1. The view identifies employees earning below their department average.
+2. The UPDATE increases their salary by 10%.
+________________
+
+
+Q6. Banking System — JOIN Operations — 5 Marks
+Assume:
+CUSTOMER
+CUSTOMER(CustomerID, CustomerName, Phone)
+ACCOUNT
+ACCOUNT(AccountNo, CustomerID, BranchID, Balance)
+TRANSACTION
+TRANSACTION(TransactionID, AccountNo, TransactionDate, Amount, Type)
+BRANCH
+BRANCH(BranchID, BranchName, City)
+Customer Account Details
+SELECT C.CustomerName,
+       A.AccountNo,
+       A.Balance
+FROM CUSTOMER C
+INNER JOIN ACCOUNT A
+ON C.CustomerID = A.CustomerID;
+Transaction History
+SELECT C.CustomerName,
+       A.AccountNo,
+       T.TransactionDate,
+       T.Amount,
+       T.Type
+FROM CUSTOMER C
+JOIN ACCOUNT A
+ON C.CustomerID = A.CustomerID
+JOIN TRANSACTION T
+ON A.AccountNo = T.AccountNo;
+Account and Branch Information
+SELECT C.CustomerName,
+       A.AccountNo,
+       A.Balance,
+       B.BranchName,
+       B.City
+FROM CUSTOMER C
+JOIN ACCOUNT A
+ON C.CustomerID = A.CustomerID
+JOIN BRANCH B
+ON A.BranchID = B.BranchID;
+Result
+The joins combine information from:
+CUSTOMER → ACCOUNT → TRANSACTION
+and
+ACCOUNT → BRANCH
+to provide complete banking information.
+________________
+
+
+Q7. Retail Store — GROUP BY and HAVING — 5 Marks
+Assume:
+SALES(SaleID, ProductID, Category, Quantity, Amount, SaleDate)
+Query
+SELECT Category,
+       SUM(Amount) AS TotalSales
+FROM SALES
+GROUP BY Category
+HAVING SUM(Amount) > 10000;
+Explanation
+* SUM(Amount) calculates total sales.
+* GROUP BY Category groups sales according to category.
+* HAVING filters the grouped results.
+* Only categories with sales greater than Rs. 10,000 are displayed.
+Example Result
+Category
+	TotalSales
+	Electronics
+	25000
+	Clothing
+	18000
+	Furniture
+	12500
+	________________
+
+
+Q8. Library — Tuple Relational Calculus — 5 Marks
+Question:
+Find members who borrowed books from all genres.
+Assume:
+* MEMBER(MemberID, MemberName)
+* BORROW(MemberID, BookID)
+* BOOK(BookID, Title, Genre)
+We need members who have borrowed at least one book from every genre.
+Tuple Relational Calculus
+{m∣MEMBER(m)∧∀g(GENRE(g)→∃b(BOOK(b)∧b.Genre=g.Genre∧∃r(BORROW(r)∧r.MemberID=m.MemberID∧r.BookID=b.BookID)))}
+Where:
+GENRE = πGenre(BOOK)
+Simplified explanation
+For every genre in the library, there must exist a book of that genre that was borrowed by the member.
+Therefore, the expression returns members who borrowed books from all available genres.
+________________
+
+
+Q9. Inventory — CHECK and FOREIGN KEY — 5 Marks
+Assume:
+CATEGORY
+CATEGORY(CategoryID, CategoryName)
+PRODUCT
+PRODUCT(ProductID, ProductName, Price, Quantity, CategoryID)
+Create CATEGORY
+CREATE TABLE CATEGORY (
+    CategoryID INT PRIMARY KEY,
+    CategoryName VARCHAR(50) NOT NULL
+);
+Create PRODUCT with constraints
+CREATE TABLE PRODUCT (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(100) NOT NULL,
+    Price DECIMAL(10,2),
+    Quantity INT,
+    CategoryID INT,
+
+
+    CHECK (Price > 0),
+    CHECK (Quantity >= 0),
+
+
+    FOREIGN KEY (CategoryID)
+    REFERENCES CATEGORY(CategoryID)
+);
+Enforcement of CHECK
+Valid:
+INSERT INTO PRODUCT
+VALUES (101, 'Laptop', 50000, 10, 1);
+Invalid:
+INSERT INTO PRODUCT
+VALUES (102, 'Mobile', -5000, 5, 1);
+This fails because:
+Price > 0
+is violated.
+Enforcement of FOREIGN KEY
+If CategoryID 99 does not exist:
+INSERT INTO PRODUCT
+VALUES (103, 'Tablet', 20000, 5, 99);
+This fails because CategoryID = 99 does not exist in the CATEGORY table.
+Conclusion
+* CHECK ensures values satisfy specified conditions.
+* FOREIGN KEY ensures referential integrity between tables.
+________________
+
+
+Q10. HR System — Schema and Materialized Views — 5 Marks
+Relational Schema
+EMPLOYEE
+EMPLOYEE(
+    EmpID PRIMARY KEY,
+    EmpName,
+    DeptID,
+    Designation
+)
+DEPARTMENT
+DEPARTMENT(
+    DeptID PRIMARY KEY,
+    DeptName
+)
+ATTENDANCE
+ATTENDANCE(
+    AttendanceID PRIMARY KEY,
+    EmpID FOREIGN KEY,
+    AttendanceDate,
+    Status
+)
+PERFORMANCE
+PERFORMANCE(
+    PerformanceID PRIMARY KEY,
+    EmpID FOREIGN KEY,
+    ReviewDate,
+    Rating
+)

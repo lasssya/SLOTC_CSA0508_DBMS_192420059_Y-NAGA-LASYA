@@ -1,0 +1,374 @@
+﻿Q1. Incorrect JOIN Syntax — 5 Marks
+Given query
+SELECT s.Name, d.DeptName
+FROM Student s, Department d;
+Error
+There is no join condition between Student and Department.
+This produces a Cartesian product, meaning every student is matched with every department, resulting in duplicate/unwanted combinations.
+Correct query
+SELECT s.Name, d.DeptName
+FROM Student s
+JOIN Department d
+ON s.DeptID = d.DeptID;
+Output
+Name
+	DeptName
+	Aravind
+	Computer Science
+	Bhavya
+	Computer Science
+	Chandran
+	Computer Science
+	Deepak
+	Electronics
+	Esha
+	Electronics
+	Farhan
+	Electronics
+	Gowri
+	Mechanical
+	Hari
+	Mechanical
+	Indra
+	Mechanical
+	Answer
+The error is the missing ON condition. The correct join is:
+ON s.DeptID = d.DeptID
+________________
+
+
+Q2. Incorrect Subquery — Department Average — 5 Marks
+Given query
+SELECT s.Name, s.DeptID, s.Marks
+FROM Student s
+WHERE s.Marks > (SELECT AVG(Marks) FROM Student);
+Error
+The subquery calculates the average marks of all students, not the average marks of the student's own department.
+We need a correlated subquery.
+Correct query
+SELECT s.Name, s.DeptID, s.Marks
+FROM Student s
+WHERE s.Marks >
+      (
+        SELECT AVG(s2.Marks)
+        FROM Student s2
+        WHERE s2.DeptID = s.DeptID
+      );
+Department averages
+* Computer Science = (85 + 78 + 90) / 3 = 84.33
+* Electronics = (60 + 55 + 95) / 3 = 70
+* Mechanical = (40 + 45 + 68) / 3 = 51
+Result
+Name
+	DeptID
+	Marks
+	Aravind
+	1
+	85
+	Chandran
+	1
+	90
+	Farhan
+	2
+	95
+	Indra
+	3
+	68
+	Key point
+WHERE s2.DeptID = s.DeptID
+creates the correlation between the outer and inner queries.
+________________
+
+
+Q3. Incorrect SQL VIEW — 5 Marks
+Given query
+CREATE VIEW DeptAvgMarks AS
+SELECT Name, DeptID, AVG(Marks) AS AvgMarks
+FROM Student
+GROUP BY DeptID;
+Error
+Name is selected but is not included in the GROUP BY clause and is not an aggregate function.
+Also, if the purpose is to find department average marks, individual student Name should not be included.
+Correct and optimized view
+CREATE VIEW DeptAvgMarks AS
+SELECT DeptID,
+       AVG(Marks) AS AvgMarks
+FROM Student
+GROUP BY DeptID;
+Query the view
+SELECT *
+FROM DeptAvgMarks;
+Output
+DeptID
+	AvgMarks
+	1
+	84.33
+	2
+	70.00
+	3
+	51.00
+	If department names are required
+A better view is:
+CREATE VIEW DeptAvgMarks AS
+SELECT d.DeptID,
+       d.DeptName,
+       AVG(s.Marks) AS AvgMarks
+FROM Department d
+JOIN Student s
+ON d.DeptID = s.DeptID
+GROUP BY d.DeptID, d.DeptName;
+________________
+
+
+Q4. Incorrect Relational Algebra Natural Join — 5 Marks
+Given expression
+πName,Age​(Student)⋈Department
+Error
+The projection is performed before the join.
+The projected relation contains only:
+Name, Age
+The DeptID attribute is removed.
+But DeptID is needed to perform the natural join with Department.
+Correct expression
+First perform the natural join:
+Student⋈Department
+Then project the required attributes:
+πName,Age​(Student⋈Department)​
+If the department name is also required:
+πName,Age,DeptName​(Student⋈Department)​
+Explanation
+Student and Department have the common attribute DeptID, so the natural join automatically joins them using DeptID.
+________________
+
+
+Q5. Referential Integrity Violation — 5 Marks
+Given table
+CREATE TABLE Student (
+    RollNo INT PRIMARY KEY,
+    Name VARCHAR(50),
+    DeptID INT,
+    Age INT,
+    Marks INT
+);
+Problem
+The following record is inserted:
+INSERT INTO Student
+(RollNo, Name, DeptID, Age, Marks)
+VALUES (110, 'Arun', 9, 20, 78);
+But the Department table contains only:
+DeptID = 1
+DeptID = 2
+DeptID = 3
+Therefore, DeptID = 9 does not exist.
+This violates referential integrity.
+Correct solution
+Create Department first:
+CREATE TABLE Department (
+    DeptID INT PRIMARY KEY,
+    DeptName VARCHAR(50),
+    HOD VARCHAR(50)
+);
+Then create Student with a foreign key:
+CREATE TABLE Student (
+    RollNo INT PRIMARY KEY,
+    Name VARCHAR(50),
+    DeptID INT,
+    Age INT,
+    Marks INT,
+    FOREIGN KEY (DeptID)
+    REFERENCES Department(DeptID)
+);
+Valid insertion
+INSERT INTO Student
+(RollNo, Name, DeptID, Age, Marks)
+VALUES (110, 'Arun', 1, 20, 78);
+Invalid insertion
+INSERT INTO Student
+(RollNo, Name, DeptID, Age, Marks)
+VALUES (111, 'Kiran', 9, 20, 78);
+This is rejected because DeptID = 9 does not exist in Department.
+________________
+
+
+Q6. Nested Subquery → JOIN — 5 Marks
+Given query
+SELECT s.Name,
+(SELECT d.DeptName
+ FROM Department d
+ WHERE d.DeptID = s.DeptID) AS DeptName
+FROM Student s;
+Problem
+The subquery is executed repeatedly for students and is less efficient/readable than a direct join.
+Optimized query
+SELECT s.Name,
+       d.DeptName
+FROM Student s
+JOIN Department d
+ON s.DeptID = d.DeptID;
+Explanation
+Instead of searching the Department table separately for each student, the JOIN directly combines the two tables using:
+s.DeptID = d.DeptID
+This is generally more efficient and easier to understand.
+________________
+
+
+Q7. Incorrect GROUP BY — 5 Marks
+Given query
+SELECT DeptID, AVG(Marks) AS AvgMarks
+FROM Student
+GROUP BY RollNo;
+Error
+The query groups records by RollNo, but the required average is department-wise.
+Every RollNo is unique, so the query effectively calculates the average for each individual student.
+Correct query
+SELECT DeptID,
+       AVG(Marks) AS AvgMarks
+FROM Student
+GROUP BY DeptID;
+Output
+DeptID
+	AvgMarks
+	1
+	84.33
+	2
+	70.00
+	3
+	51.00
+	Explanation
+Since we want the average marks for each department, we must use:
+GROUP BY DeptID
+________________
+
+
+Q8. UPDATE Modifies All Rows — 5 Marks
+Given query
+UPDATE Student
+SET Marks = Marks + 5;
+Error
+There is no WHERE condition.
+Therefore, every student receives 5 additional marks.
+Correct query
+UPDATE Student
+SET Marks = Marks + 5
+WHERE DeptID = 2;
+Result
+Only students in Department 2 are updated:
+Name
+	Old Marks
+	New Marks
+	Deepak
+	60
+	65
+	Esha
+	55
+	60
+	Farhan
+	95
+	100
+	Important exam point
+Always use a suitable WHERE clause when updating specific records.
+________________
+
+
+Q9. Optimize Multi-Table Query — 5 Marks
+Given query
+SELECT s.Name, s.Marks,
+(SELECT DeptName
+ FROM Department
+ WHERE DeptID = s.DeptID) AS DeptName,
+(SELECT HOD
+ FROM Department
+ WHERE DeptID = s.DeptID) AS HeadOfDept
+FROM Student s
+WHERE s.DeptID IN (
+    SELECT DeptID
+    FROM Department
+    WHERE DeptName IN
+    ('Computer Science', 'Electronics')
+);
+Problems
+There are multiple subqueries repeatedly accessing Department.
+We can replace them with a single JOIN.
+Optimized query
+SELECT s.Name,
+       s.Marks,
+       d.DeptName,
+       d.HOD AS HeadOfDept
+FROM Student s
+JOIN Department d
+ON s.DeptID = d.DeptID
+WHERE d.DeptName IN
+      ('Computer Science', 'Electronics');
+Output
+Name
+	Marks
+	DeptName
+	HeadOfDept
+	Aravind
+	85
+	Computer Science
+	Dr. Rao
+	Bhavya
+	78
+	Computer Science
+	Dr. Rao
+	Chandran
+	90
+	Computer Science
+	Dr. Rao
+	Deepak
+	60
+	Electronics
+	Dr. Iyer
+	Esha
+	55
+	Electronics
+	Dr. Iyer
+	Farhan
+	95
+	Electronics
+	Dr. Iyer
+	Indexes for optimization
+CREATE INDEX idx_student_dept
+ON Student(DeptID);
+
+
+CREATE INDEX idx_department_name
+ON Department(DeptName);
+These indexes can improve searches and joins involving DeptID and DeptName.
+________________
+
+
+Q10. Incorrect Relational Calculus — 5 Marks
+Given expression
+{ s.Name | Student(s) ∧
+  (∀ t) (Student(t) ∧ t.DeptID = 2
+  → s.Marks > t.Marks) }
+Error
+The question asks:
+Students who scored more than AT LEAST ONE student in Department 2.
+The expression uses:
+∀t
+which means for all students.
+That is incorrect.
+We need:
+∃t
+which means there exists at least one student.
+Correct expression
+{s.Name∣Student(s)∧(∃t)(Student(t)∧t.DeptID=2∧s.Marks>t.Marks)}​
+Explanation
+* Student(s) → s is a student.
+* ∃t → there exists at least one student t.
+* t.DeptID = 2 → t belongs to Department 2.
+* s.Marks > t.Marks → student s scored higher than that student.
+Using the given data
+Department 2 marks are:
+Deepak  = 60
+Esha    = 55
+Farhan  = 95
+Students who scored more than at least one Department 2 student include:
+Aravind 85
+Bhavya 78
+Chandran 90
+Farhan 95
+Indra 68
