@@ -1,0 +1,1054 @@
+Enter password: *****
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 36
+Server version: 8.0.45 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2026, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> CREATE DATABASE CollegeDB;
+Query OK, 1 row affected (0.01 sec)
+
+mysql>
+mysql> USE CollegeDB;
+Database changed
+mysql> CREATE TABLE Student (
+    ->     RollNo INT,
+    ->     Name VARCHAR(50),
+    ->     Age INT,
+    ->     Marks INT
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> SHOW TABLES;
++---------------------+
+| Tables_in_collegedb |
++---------------------+
+| student             |
++---------------------+
+1 row in set (0.02 sec)
+
+mysql> DESC Student;
++--------+-------------+------+-----+---------+-------+
+| Field  | Type        | Null | Key | Default | Extra |
++--------+-------------+------+-----+---------+-------+
+| RollNo | int         | YES  |     | NULL    |       |
+| Name   | varchar(50) | YES  |     | NULL    |       |
+| Age    | int         | YES  |     | NULL    |       |
+| Marks  | int         | YES  |     | NULL    |       |
++--------+-------------+------+-----+---------+-------+
+4 rows in set (0.02 sec)
+
+mysql> ALTER TABLE Student
+    -> ADD Email VARCHAR(100);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DESC Student;
++--------+--------------+------+-----+---------+-------+
+| Field  | Type         | Null | Key | Default | Extra |
++--------+--------------+------+-----+---------+-------+
+| RollNo | int          | YES  |     | NULL    |       |
+| Name   | varchar(50)  | YES  |     | NULL    |       |
+| Age    | int          | YES  |     | NULL    |       |
+| Marks  | int          | YES  |     | NULL    |       |
+| Email  | varchar(100) | YES  |     | NULL    |       |
++--------+--------------+------+-----+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> ALTER TABLE Student
+    -> MODIFY Name VARCHAR(100);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE Student
+    -> RENAME COLUMN Name TO StudentName;
+Query OK, 0 rows affected (0.03 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> ALTER TABLE Student
+    -> DROP COLUMN Email;
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> INSERT INTO Student VALUES
+    -> (101, 'Aravind', 20, 85),
+    -> (102, 'Bhavya', 21, 78);
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Student;
++--------+-------------+------+-------+
+| RollNo | StudentName | Age  | Marks |
++--------+-------------+------+-------+
+|    101 | Aravind     |   20 |    85 |
+|    102 | Bhavya      |   21 |    78 |
++--------+-------------+------+-------+
+2 rows in set (0.00 sec)
+
+mysql> TRUNCATE TABLE Student;
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> SELECT * FROM Student;
+Empty set (0.00 sec)
+
+mysql> DROP TABLE Student;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SHOW TABLES;
+Empty set (0.00 sec)
+
+mysql> CREATE TABLE Department (
+    ->     DeptID INT PRIMARY KEY,
+    ->     DeptName VARCHAR(50) NOT NULL,
+    ->     HOD VARCHAR(50)
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO Department VALUES
+    -> (1, 'Computer Science', 'Dr. Rao'),
+    -> (2, 'Electronics', 'Dr. Iyer'),
+    -> (3, 'Mechanical', 'Dr. Nair');
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> CREATE TABLE Student (
+    ->     RollNo INT PRIMARY KEY,
+    ->     Name VARCHAR(50) NOT NULL,
+    ->     DeptID INT,
+    ->     Age INT CHECK (Age >= 18),
+    ->     Email VARCHAR(100) UNIQUE,
+    ->     City VARCHAR(50) DEFAULT 'Chennai',
+    ->     FOREIGN KEY (DeptID) REFERENCES Department(DeptID)
+    -> );
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> DESC Student;
++--------+--------------+------+-----+---------+-------+
+| Field  | Type         | Null | Key | Default | Extra |
++--------+--------------+------+-----+---------+-------+
+| RollNo | int          | NO   | PRI | NULL    |       |
+| Name   | varchar(50)  | NO   |     | NULL    |       |
+| DeptID | int          | YES  | MUL | NULL    |       |
+| Age    | int          | YES  |     | NULL    |       |
+| Email  | varchar(100) | YES  | UNI | NULL    |       |
+| City   | varchar(50)  | YES  |     | Chennai |       |
++--------+--------------+------+-----+---------+-------+
+6 rows in set (0.00 sec)
+
+mysql> INSERT INTO Student
+    -> VALUES (101, 'Aravind', 1, 20, 'aravind@gmail.com', 'Chennai');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> INSERT INTO Student
+    -> VALUES (101, 'Bhavya', 1, 21, 'bhavya@gmail.com', 'Chennai');
+ERROR 1062 (23000): Duplicate entry '101' for key 'student.PRIMARY'
+mysql> INSERT INTO Student
+    -> VALUES (102, NULL, 1, 20, 'test@gmail.com', 'Chennai');
+ERROR 1048 (23000): Column 'Name' cannot be null
+mysql> INSERT INTO Student
+    -> VALUES (103, 'Chandran', 1, 20, 'aravind@gmail.com', 'Chennai');
+ERROR 1062 (23000): Duplicate entry 'aravind@gmail.com' for key 'student.Email'
+mysql> INSERT INTO Student
+    -> VALUES (104, 'Deepak', 1, 15, 'deepak@gmail.com', 'Chennai');
+ERROR 3819 (HY000): Check constraint 'student_chk_1' is violated.
+mysql> INSERT INTO Student
+    -> (RollNo, Name, DeptID, Age, Email)
+    -> VALUES
+    -> (105, 'Esha', 2, 21, 'esha@gmail.com');
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM Student;
++--------+---------+--------+------+-------------------+---------+
+| RollNo | Name    | DeptID | Age  | Email             | City    |
++--------+---------+--------+------+-------------------+---------+
+|    101 | Aravind |      1 |   20 | aravind@gmail.com | Chennai |
+|    105 | Esha    |      2 |   21 | esha@gmail.com    | Chennai |
++--------+---------+--------+------+-------------------+---------+
+2 rows in set (0.00 sec)
+
+mysql> INSERT INTO Student
+    -> VALUES
+    -> (106, 'Farhan', 10, 22, 'farhan@gmail.com', 'Chennai');
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`collegedb`.`student`, CONSTRAINT `student_ibfk_1` FOREIGN KEY (`DeptID`) REFERENCES `department` (`DeptID`))
+mysql> INSERT INTO Student
+    -> VALUES
+    -> (107, 'Gowri', 3, 20, 'gowri@gmail.com', 'Chennai');
+Query OK, 1 row affected (0.00 sec)
+
+mysql> INSERT INTO Student
+    -> VALUES
+    -> (108, 'Hari', 3, 21, 'hari@gmail.com', 'Hyderabad'),
+    -> (109, 'Indra', 3, 20, 'indra@gmail.com', 'Bangalore');
+Query OK, 2 rows affected (0.01 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Student;
++--------+---------+--------+------+-------------------+-----------+
+| RollNo | Name    | DeptID | Age  | Email             | City      |
++--------+---------+--------+------+-------------------+-----------+
+|    101 | Aravind |      1 |   20 | aravind@gmail.com | Chennai   |
+|    105 | Esha    |      2 |   21 | esha@gmail.com    | Chennai   |
+|    107 | Gowri   |      3 |   20 | gowri@gmail.com   | Chennai   |
+|    108 | Hari    |      3 |   21 | hari@gmail.com    | Hyderabad |
+|    109 | Indra   |      3 |   20 | indra@gmail.com   | Bangalore |
++--------+---------+--------+------+-------------------+-----------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT RollNo, Name, Marks
+    -> FROM Student;
+ERROR 1054 (42S22): Unknown column 'Marks' in 'field list'
+mysql> ALTER TABLE Student
+    -> ADD Marks INT;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> UPDATE Student
+    -> SET Marks = 85
+    -> WHERE RollNo = 101;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM Student;
++--------+---------+--------+------+-------------------+-----------+-------+
+| RollNo | Name    | DeptID | Age  | Email             | City      | Marks |
++--------+---------+--------+------+-------------------+-----------+-------+
+|    101 | Aravind |      1 |   20 | aravind@gmail.com | Chennai   |    85 |
+|    105 | Esha    |      2 |   21 | esha@gmail.com    | Chennai   |  NULL |
+|    107 | Gowri   |      3 |   20 | gowri@gmail.com   | Chennai   |  NULL |
+|    108 | Hari    |      3 |   21 | hari@gmail.com    | Hyderabad |  NULL |
+|    109 | Indra   |      3 |   20 | indra@gmail.com   | Bangalore |  NULL |
++--------+---------+--------+------+-------------------+-----------+-------+
+5 rows in set (0.00 sec)
+
+mysql> UPDATE Student
+    -> SET Marks = 90
+    -> WHERE RollNo = 101;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> UPDATE Student
+    -> SET City = 'Hyderabad'
+    -> WHERE RollNo = 102;
+Query OK, 0 rows affected (0.00 sec)
+Rows matched: 0  Changed: 0  Warnings: 0
+
+mysql> UPDATE Student
+    -> SET Marks = Marks + 5
+    -> WHERE DeptID = 1;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM Student;
++--------+---------+--------+------+-------------------+-----------+-------+
+| RollNo | Name    | DeptID | Age  | Email             | City      | Marks |
++--------+---------+--------+------+-------------------+-----------+-------+
+|    101 | Aravind |      1 |   20 | aravind@gmail.com | Chennai   |    95 |
+|    105 | Esha    |      2 |   21 | esha@gmail.com    | Chennai   |  NULL |
+|    107 | Gowri   |      3 |   20 | gowri@gmail.com   | Chennai   |  NULL |
+|    108 | Hari    |      3 |   21 | hari@gmail.com    | Hyderabad |  NULL |
+|    109 | Indra   |      3 |   20 | indra@gmail.com   | Bangalore |  NULL |
++--------+---------+--------+------+-------------------+-----------+-------+
+5 rows in set (0.00 sec)
+
+mysql> DELETE FROM Student
+    -> WHERE RollNo = 109;
+Query OK, 1 row affected (0.01 sec)
+
+mysql> DELETE FROM Student
+    -> WHERE Marks < 40;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> DELETE FROM Student;
+Query OK, 4 rows affected (0.01 sec)
+
+mysql> CREATE TABLE Account (
+    ->     AccNo INT PRIMARY KEY,
+    ->     Name VARCHAR(50),
+    ->     Balance DECIMAL(10,2)
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO Account VALUES
+    -> (1, 'Aravind', 10000),
+    -> (2, 'Bhavya', 15000);
+Query OK, 2 rows affected (0.02 sec)
+Records: 2  Duplicates: 0  Warnings: 0
+
+mysql> START TRANSACTION;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> UPDATE Account
+    -> SET Balance = Balance - 1000
+    -> WHERE AccNo = 1;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql>
+mysql> COMMIT;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT * FROM Account;
++-------+---------+----------+
+| AccNo | Name    | Balance  |
++-------+---------+----------+
+|     1 | Aravind |  9000.00 |
+|     2 | Bhavya  | 15000.00 |
++-------+---------+----------+
+2 rows in set (0.00 sec)
+
+mysql> START TRANSACTION;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> UPDATE Account
+    -> SET Balance = Balance - 500
+    -> WHERE AccNo = 1;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql>
+mysql> SAVEPOINT sp1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> UPDATE Account
+    -> SET Balance = Balance + 500
+    -> WHERE AccNo = 2;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> ROLLBACK TO sp1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> ROLLBACK TO sp1;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> COMMIT;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> START TRANSACTION;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> UPDATE Account
+    -> SET Balance = Balance - 2000
+    -> WHERE AccNo = 1;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql>
+mysql> ROLLBACK;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> START TRANSACTION;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql>
+mysql> UPDATE Account
+    -> SET Balance = Balance - 2000
+    -> WHERE AccNo = 1;
+Query OK, 1 row affected (0.00 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql>
+mysql> ROLLBACK;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> SELECT * FROM Account;
++-------+---------+----------+
+| AccNo | Name    | Balance  |
++-------+---------+----------+
+|     1 | Aravind |  8500.00 |
+|     2 | Bhavya  | 15000.00 |
++-------+---------+----------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT * FROM Account;
++-------+---------+----------+
+| AccNo | Name    | Balance  |
++-------+---------+----------+
+|     1 | Aravind |  8500.00 |
+|     2 | Bhavya  | 15000.00 |
++-------+---------+----------+
+2 rows in set (0.00 sec)
+
+mysql> CREATE USER 'studentuser'@'localhost'
+    -> IDENTIFIED BY 'student123';
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> GRANT SELECT
+    -> ON CollegeDB.Student
+    -> TO 'studentuser'@'localhost';
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> GRANT SELECT, INSERT, UPDATE
+    -> ON CollegeDB.Student
+    -> TO 'studentuser'@'localhost';
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SHOW GRANTS FOR 'studentuser'@'localhost';
++------------------------------------------------------------------------------------+
+| Grants for studentuser@localhost         |
++------------------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `studentuser`@`localhost`         |
+| GRANT SELECT, INSERT, UPDATE ON `collegedb`.`student` TO `studentuser`@`localhost` |
++------------------------------------------------------------------------------------+
+2 rows in set (0.00 sec)
+
+mysql> REVOKE INSERT
+    -> ON CollegeDB.Student
+    -> FROM 'studentuser'@'localhost';
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SHOW GRANTS FOR 'studentuser'@'localhost';
++----------------------------------------------------------------------------+
+| Grants for studentuser@localhost |
++----------------------------------------------------------------------------+
+| GRANT USAGE ON *.* TO `studentuser`@`localhost` |
+| GRANT SELECT, UPDATE ON `collegedb`.`student` TO `studentuser`@`localhost` |
++----------------------------------------------------------------------------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Marks > 80;
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE DeptID = 1;
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Age = 20;
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Age = 20 AND Marks > 80;
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE DeptID = 1 OR DeptID = 2;
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE NOT DeptID = 1;
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Name LIKE 'A%';
+Empty set (0.01 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Name LIKE '%a';
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Name LIKE '%vi%';
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Name LIKE '_r%';
+Empty set (0.00 sec)
+
+mysql> USE csa0508_dbms;
+ERROR 1049 (42000): Unknown database 'csa0508_dbms'
+mysql> use CollegeDB;
+Database changed
+mysql> SELECT * FROM Student;
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Marks > 80;
+Empty set (0.00 sec)
+
+mysql> USE CollegeDB;
+Database changed
+mysql> DESC Student;
++--------+--------------+------+-----+---------+-------+
+| Field  | Type         | Null | Key | Default | Extra |
++--------+--------------+------+-----+---------+-------+
+| RollNo | int          | NO   | PRI | NULL    |       |
+| Name   | varchar(50)  | NO   |     | NULL    |       |
+| DeptID | int          | YES  | MUL | NULL    |       |
+| Age    | int          | YES  |     | NULL    |       |
+| Email  | varchar(100) | YES  | UNI | NULL    |       |
+| City   | varchar(50)  | YES  |     | Chennai |       |
+| Marks  | int          | YES  |     | NULL    |       |
++--------+--------------+------+-----+---------+-------+
+7 rows in set (0.00 sec)
+
+mysql> INSERT INTO Student (RollNo, Name, Age, Marks)
+    -> VALUES
+    -> (101, 'Aravind', 20, 85),
+    -> (102, 'Bhavya', 21, 78),
+    -> (103, 'Chandran', 20, 90),
+    -> (104, 'Deepak', 22, 60),
+    -> (105, 'Esha', 21, 55);
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Student;
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya   |   NULL |   21 | NULL  | Chennai |    78 |
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
+|    104 | Deepak   |   NULL |   22 | NULL  | Chennai |    60 |
+|    105 | Esha     |   NULL |   21 | NULL  | Chennai |    55 |
++--------+----------+--------+------+-------+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Marks > 80;
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
++--------+----------+--------+------+-------+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Name LIKE '%a';
++--------+--------+--------+------+-------+---------+-------+
+| RollNo | Name   | DeptID | Age  | Email | City    | Marks |
++--------+--------+--------+------+-------+---------+-------+
+|    102 | Bhavya |   NULL |   21 | NULL  | Chennai |    78 |
+|    105 | Esha   |   NULL |   21 | NULL  | Chennai |    55 |
++--------+--------+--------+------+-------+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Name LIKE '%vi%';
++--------+---------+--------+------+-------+---------+-------+
+| RollNo | Name    | DeptID | Age  | Email | City    | Marks |
++--------+---------+--------+------+-------+---------+-------+
+|    101 | Aravind |   NULL |   20 | NULL  | Chennai |    85 |
++--------+---------+--------+------+-------+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Name LIKE '_r%';
++--------+---------+--------+------+-------+---------+-------+
+| RollNo | Name    | DeptID | Age  | Email | City    | Marks |
++--------+---------+--------+------+-------+---------+-------+
+|    101 | Aravind |   NULL |   20 | NULL  | Chennai |    85 |
++--------+---------+--------+------+-------+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Marks BETWEEN 60 AND 90;
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya   |   NULL |   21 | NULL  | Chennai |    78 |
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
+|    104 | Deepak   |   NULL |   22 | NULL  | Chennai |    60 |
++--------+----------+--------+------+-------+---------+-------+
+4 rows in set (0.01 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Age BETWEEN 20 AND 22;
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya   |   NULL |   21 | NULL  | Chennai |    78 |
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
+|    104 | Deepak   |   NULL |   22 | NULL  | Chennai |    60 |
+|    105 | Esha     |   NULL |   21 | NULL  | Chennai |    55 |
++--------+----------+--------+------+-------+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE DeptID IN (1, 2);
+Empty set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE City IN ('Chennai', 'Hyderabad');
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya   |   NULL |   21 | NULL  | Chennai |    78 |
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
+|    104 | Deepak   |   NULL |   22 | NULL  | Chennai |    60 |
+|    105 | Esha     |   NULL |   21 | NULL  | Chennai |    55 |
++--------+----------+--------+------+-------+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT COUNT(*) AS TotalStudents
+    -> FROM Student;
++---------------+
+| TotalStudents |
++---------------+
+|             5 |
++---------------+
+1 row in set (0.01 sec)
+
+mysql> SELECT SUM(Marks) AS TotalMarks
+    -> FROM Student;
++------------+
+| TotalMarks |
++------------+
+|        368 |
++------------+
+1 row in set (0.01 sec)
+
+mysql> SELECT AVG(Marks) AS AverageMarks
+    -> FROM Student;
++--------------+
+| AverageMarks |
++--------------+
+|      73.6000 |
++--------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT MAX(Marks) AS HighestMarks
+    -> FROM Student;
++--------------+
+| HighestMarks |
++--------------+
+|           90 |
++--------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT DeptID, COUNT(*) AS TotalStudents
+    -> FROM Student
+    -> GROUP BY DeptID;
++--------+---------------+
+| DeptID | TotalStudents |
++--------+---------------+
+|   NULL |             5 |
++--------+---------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT DeptID, AVG(Marks) AS AverageMarks
+    -> FROM Student
+    -> GROUP BY DeptID;
++--------+--------------+
+| DeptID | AverageMarks |
++--------+--------------+
+|   NULL |      73.6000 |
++--------+--------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT DeptID, COUNT(*) AS TotalStudents
+    -> FROM Student
+    -> GROUP BY DeptID
+    -> HAVING COUNT(*) > 2;
++--------+---------------+
+| DeptID | TotalStudents |
++--------+---------------+
+|   NULL |             5 |
++--------+---------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT DeptID, AVG(Marks) AS AverageMarks
+    -> FROM Student
+    -> GROUP BY DeptID
+    -> HAVING AVG(Marks) > 70;
++--------+--------------+
+| DeptID | AverageMarks |
++--------+--------------+
+|   NULL |      73.6000 |
++--------+--------------+
+1 row in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> ORDER BY Marks ASC;
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    105 | Esha     |   NULL |   21 | NULL  | Chennai |    55 |
+|    104 | Deepak   |   NULL |   22 | NULL  | Chennai |    60 |
+|    102 | Bhavya   |   NULL |   21 | NULL  | Chennai |    78 |
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
++--------+----------+--------+------+-------+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> ORDER BY Marks DESC;
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya   |   NULL |   21 | NULL  | Chennai |    78 |
+|    104 | Deepak   |   NULL |   22 | NULL  | Chennai |    60 |
+|    105 | Esha     |   NULL |   21 | NULL  | Chennai |    55 |
++--------+----------+--------+------+-------+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> ORDER BY Name ASC;
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya   |   NULL |   21 | NULL  | Chennai |    78 |
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
+|    104 | Deepak   |   NULL |   22 | NULL  | Chennai |    60 |
+|    105 | Esha     |   NULL |   21 | NULL  | Chennai |    55 |
++--------+----------+--------+------+-------+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> ORDER BY DeptID ASC, Marks DESC;
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya   |   NULL |   21 | NULL  | Chennai |    78 |
+|    104 | Deepak   |   NULL |   22 | NULL  | Chennai |    60 |
+|    105 | Esha     |   NULL |   21 | NULL  | Chennai |    55 |
++--------+----------+--------+------+-------+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql> ^C
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Marks > (
+    ->     SELECT AVG(Marks)
+    ->     FROM Student
+    -> );
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    101 | Aravind  |   NULL |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya   |   NULL |   21 | NULL  | Chennai |    78 |
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
++--------+----------+--------+------+-------+---------+-------+
+3 rows in set (0.01 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE Marks = (
+    ->     SELECT MAX(Marks)
+    ->     FROM Student
+    -> );
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
++--------+----------+--------+------+-------+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE DeptID IN (
+    ->     SELECT DeptID
+    ->     FROM Department
+    ->     WHERE HOD IN ('Dr. Rao', 'Dr. Iyer')
+    -> );
+Empty set (0.01 sec)
+
+mysql> SELECT S1.*
+    -> FROM Student S1
+    -> WHERE Marks > (
+    ->     SELECT AVG(S2.Marks)
+    ->     FROM Student S2
+    ->     WHERE S2.DeptID = S1.DeptID
+    -> );
+Empty set (0.00 sec)
+
+mysql> SELECT * FROM Department;
++--------+------------------+----------+
+| DeptID | DeptName         | HOD      |
++--------+------------------+----------+
+|      1 | Computer Science | Dr. Rao  |
+|      2 | Electronics      | Dr. Iyer |
+|      3 | Mechanical       | Dr. Nair |
++--------+------------------+----------+
+3 rows in set (0.00 sec)
+
+mysql> UPDATE Student
+    -> SET DeptID = 1
+    -> WHERE RollNo = 101;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> UPDATE Student
+    -> SET DeptID = 1
+    -> WHERE RollNo = 102;
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> SELECT * FROM Student;
++--------+----------+--------+------+-------+---------+-------+
+| RollNo | Name     | DeptID | Age  | Email | City    | Marks |
++--------+----------+--------+------+-------+---------+-------+
+|    101 | Aravind  |      1 |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya   |      1 |   21 | NULL  | Chennai |    78 |
+|    103 | Chandran |   NULL |   20 | NULL  | Chennai |    90 |
+|    104 | Deepak   |   NULL |   22 | NULL  | Chennai |    60 |
+|    105 | Esha     |   NULL |   21 | NULL  | Chennai |    55 |
++--------+----------+--------+------+-------+---------+-------+
+5 rows in set (0.00 sec)
+
+mysql>
+mysql> SELECT *
+    -> FROM Student
+    -> WHERE DeptID IN (
+    ->     SELECT DeptID
+    ->     FROM Department
+    ->     WHERE HOD IN ('Dr. Rao', 'Dr. Iyer')
+    -> );
++--------+---------+--------+------+-------+---------+-------+
+| RollNo | Name    | DeptID | Age  | Email | City    | Marks |
++--------+---------+--------+------+-------+---------+-------+
+|    101 | Aravind |      1 |   20 | NULL  | Chennai |    85 |
+|    102 | Bhavya  |      1 |   21 | NULL  | Chennai |    78 |
++--------+---------+--------+------+-------+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT S1.*
+    -> FROM Student S1
+    -> WHERE Marks > (
+    ->     SELECT AVG(S2.Marks)
+    ->     FROM Student S2
+    ->     WHERE S2.DeptID = S1.DeptID
+    -> );
++--------+---------+--------+------+-------+---------+-------+
+| RollNo | Name    | DeptID | Age  | Email | City    | Marks |
++--------+---------+--------+------+-------+---------+-------+
+|    101 | Aravind |      1 |   20 | NULL  | Chennai |    85 |
++--------+---------+--------+------+-------+---------+-------+
+1 row in set (0.00 sec)
+
+mysql> SELECT Student.RollNo,
+    ->        Student.Name,
+    ->        Department.DeptName
+    -> FROM Student, Department
+    -> WHERE Student.DeptID = Department.DeptID;
++--------+---------+------------------+
+| RollNo | Name    | DeptName         |
++--------+---------+------------------+
+|    101 | Aravind | Computer Science |
+|    102 | Bhavya  | Computer Science |
++--------+---------+------------------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT S.RollNo,
+    ->        S.Name,
+    ->        D.DeptName
+    -> FROM Student S
+    -> INNER JOIN Department D
+    -> ON S.DeptID = D.DeptID;
++--------+---------+------------------+
+| RollNo | Name    | DeptName         |
++--------+---------+------------------+
+|    101 | Aravind | Computer Science |
+|    102 | Bhavya  | Computer Science |
++--------+---------+------------------+
+2 rows in set (0.00 sec)
+
+mysql> SELECT S.RollNo,
+    ->        S.Name,
+    ->        D.DeptName
+    -> FROM Student S
+    -> LEFT JOIN Department D
+    -> ON S.DeptID = D.DeptID;
++--------+----------+------------------+
+| RollNo | Name     | DeptName         |
++--------+----------+------------------+
+|    101 | Aravind  | Computer Science |
+|    102 | Bhavya   | Computer Science |
+|    103 | Chandran | NULL             |
+|    104 | Deepak   | NULL             |
+|    105 | Esha     | NULL             |
++--------+----------+------------------+
+5 rows in set (0.00 sec)
+
+mysql> SELECT S.RollNo, S.Name, D.DeptName
+    -> FROM Student S
+    -> LEFT JOIN Department D
+    -> ON S.DeptID = D.DeptID
+    ->
+    -> UNION
+    ->
+    -> SELECT S.RollNo, S.Name, D.DeptName
+    -> FROM Student S
+    -> RIGHT JOIN Department D
+    -> ON S.DeptID = D.DeptID;
++--------+----------+------------------+
+| RollNo | Name     | DeptName         |
++--------+----------+------------------+
+|    101 | Aravind  | Computer Science |
+|    102 | Bhavya   | Computer Science |
+|    103 | Chandran | NULL             |
+|    104 | Deepak   | NULL             |
+|    105 | Esha     | NULL             |
+|   NULL | NULL     | Electronics      |
+|   NULL | NULL     | Mechanical       |
++--------+----------+------------------+
+7 rows in set (0.01 sec)
+
+mysql> CREATE VIEW HighMarksStudents AS
+    -> SELECT RollNo, Name, Marks
+    -> FROM Student
+    -> WHERE Marks > 80;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> SELECT *
+    -> FROM HighMarksStudents;
++--------+----------+-------+
+| RollNo | Name     | Marks |
++--------+----------+-------+
+|    101 | Aravind  |    85 |
+|    103 | Chandran |    90 |
++--------+----------+-------+
+2 rows in set (0.01 sec)
+
+mysql> SHOW FULL TABLES
+    -> WHERE TABLE_TYPE = 'VIEW';
++---------------------+------------+
+| Tables_in_collegedb | Table_type |
++---------------------+------------+
+| highmarksstudents   | VIEW       |
++---------------------+------------+
+1 row in set (0.01 sec)
+
+mysql> DROP VIEW HighMarksStudents;
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> CREATE INDEX idx_student_name
+    -> ON Student(Name);
+Query OK, 0 rows affected (0.05 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> SHOW INDEX FROM Student;
++---------+------------+------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| Table   | Non_unique | Key_name         | Seq_in_index | Column_name | Collation | Cardinality | Sub_part | Packed | Null | Index_type | Comment | Index_comment | Visible | Expression |
++---------+------------+------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+| student |          0 | PRIMARY          |            1 | RollNo      | A       |           5 |     NULL |   NULL |      | BTREE      |         |           | YES     | NULL       |
+| student |          0 | Email            |            1 | Email       | A       |           1 |     NULL |   NULL | YES  | BTREE      |         |           | YES     | NULL       |
+| student |          1 | DeptID           |            1 | DeptID      | A       |           2 |     NULL |   NULL | YES  | BTREE      |         |           | YES     | NULL       |
+| student |          1 | idx_student_name |            1 | Name        | A       |           5 |     NULL |   NULL |      | BTREE      |         |           | YES     | NULL       |
++---------+------------+------------------+--------------+-------------+-----------+-------------+----------+--------+------+------------+---------+---------------+---------+------------+
+4 rows in set (0.01 sec)
+
+mysql> CREATE INDEX idx_marks
+    -> ON Student(Marks);
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> DROP INDEX idx_marks
+    -> ON Student;
+Query OK, 0 rows affected (0.02 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> CREATE TABLE StudentAuto (
+    ->     RollNo INT AUTO_INCREMENT PRIMARY KEY,
+    ->     Name VARCHAR(50),
+    ->     Marks INT
+    -> );
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> INSERT INTO StudentAuto (Name, Marks)
+    -> VALUES ('Aravind', 85);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> INSERT INTO StudentAuto (Name, Marks)
+    -> VALUES ('Bhavya', 78);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> INSERT INTO StudentAuto (Name, Marks)
+    -> VALUES ('Chandran', 90);
+Query OK, 1 row affected (0.01 sec)
+
+mysql> SELECT * FROM StudentAuto;
++--------+----------+-------+
+| RollNo | Name     | Marks |
++--------+----------+-------+
+|      1 | Aravind  |    85 |
+|      2 | Bhavya   |    78 |
+|      3 | Chandran |    90 |
++--------+----------+-------+
+3 rows in set (0.00 sec)
+
+mysql> CREATE TABLE Employee (
+    ->     EmpID INT AUTO_INCREMENT PRIMARY KEY,
+    ->     EmpName VARCHAR(50),
+    ->     Salary DECIMAL(10,2)
+    -> ) AUTO_INCREMENT = 1001;
+Query OK, 0 rows affected (0.03 sec)
+
+mysql> SELECT * FROM Employee;
+Empty set (0.00 sec)
+
+mysql>
+mysql> ^C
+mysql> INSERT INTO Employee (EmpName, Salary)
+    -> VALUES
+    -> ('Arun', 30000),
+    -> ('Bhavya', 35000),
+    -> ('Chandran', 40000);
+Query OK, 3 rows affected (0.01 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> SELECT * FROM Employee;
++-------+----------+----------+
+| EmpID | EmpName  | Salary   |
++-------+----------+----------+
+|  1001 | Arun     | 30000.00 |
+|  1002 | Bhavya   | 35000.00 |
+|  1003 | Chandran | 40000.00 |
++-------+----------+----------+
+3 rows in set (0.00 sec)
+
+mysql> SELECT * FROM StudentAuto;
++--------+----------+-------+
+| RollNo | Name     | Marks |
++--------+----------+-------+
+|      1 | Aravind  |    85 |
+|      2 | Bhavya   |    78 |
+|      3 | Chandran |    90 |
++--------+----------+-------+
+3 rows in set (0.00 sec)
+
+mysql> SELECT * FROM Employee;
++-------+----------+----------+
+| EmpID | EmpName  | Salary   |
++-------+----------+----------+
+|  1001 | Arun     | 30000.00 |
+|  1002 | Bhavya   | 35000.00 |
+|  1003 | Chandran | 40000.00 |
++-------+----------+----------+
+3 rows in set (0.00 sec)
+
+mysql>
